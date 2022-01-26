@@ -1,0 +1,91 @@
+<html>
+<head>
+<title>MainActivity.java</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cc7832;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #6a8759;}
+.s3 { color: #808080;}
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+MainActivity.java</font>
+</center></td></tr></table>
+<pre><span class="s0">package </span><span class="s1">com.codepath.kembo.flixster</span><span class="s0">;</span>
+
+<span class="s0">import </span><span class="s1">androidx.appcompat.app.AppCompatActivity</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">androidx.recyclerview.widget.LinearLayoutManager</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">androidx.recyclerview.widget.RecyclerView</span><span class="s0">;</span>
+
+<span class="s0">import </span><span class="s1">android.os.Bundle</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.util.Log</span><span class="s0">;</span>
+
+<span class="s0">import </span><span class="s1">com.codepath.asynchttpclient.AsyncHttpClient</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">com.codepath.asynchttpclient.callback.JsonHttpResponseHandler</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">com.facebook.stetho.common.ArrayListAccumulator</span><span class="s0">;</span>
+
+<span class="s0">import </span><span class="s1">org.json.JSONArray</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">org.json.JSONException</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">org.json.JSONObject</span><span class="s0">;</span>
+
+<span class="s0">import </span><span class="s1">java.util.ArrayList</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">java.util.List</span><span class="s0">;</span>
+
+<span class="s0">import </span><span class="s1">adapters.MovieAdapter</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">models.Movie</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">okhttp3.Headers</span><span class="s0">;</span>
+
+<span class="s0">public class </span><span class="s1">MainActivity </span><span class="s0">extends </span><span class="s1">AppCompatActivity {</span>
+
+    <span class="s0">public static final </span><span class="s1">String NOW_PLAYING_URL = </span><span class="s2">&quot;https://api.themoviedb.org/3/movie/now_playing?api_key=a07e22bc18f5cb106bfe4cc1f83ad8ed&quot;</span><span class="s0">;</span>
+    <span class="s0">public static final </span><span class="s1">String TAG = </span><span class="s2">&quot;MainActivity&quot;</span><span class="s0">;</span>
+
+    <span class="s1">List&lt;Movie&gt; movies</span><span class="s0">;</span>
+
+    <span class="s1">@Override</span>
+    <span class="s0">protected void </span><span class="s1">onCreate(Bundle savedInstanceState) {</span>
+        <span class="s0">super</span><span class="s1">.onCreate(savedInstanceState)</span><span class="s0">;</span>
+        <span class="s1">setContentView(R.layout.activity_main)</span><span class="s0">;</span>
+        <span class="s1">RecyclerView rvMovies = findViewById(R.id.rvMovies)</span><span class="s0">;</span>
+        <span class="s1">movies = </span><span class="s0">new </span><span class="s1">ArrayList&lt;&gt;()</span><span class="s0">;</span>
+        <span class="s3">//Create the adapter</span>
+        <span class="s1">MovieAdapter movieAdapter = </span><span class="s0">new </span><span class="s1">MovieAdapter(</span><span class="s0">this, </span><span class="s1">movies)</span><span class="s0">;</span>
+        <span class="s3">//Set the adapter on the recycle view</span>
+        <span class="s1">rvMovies.setAdapter(movieAdapter)</span><span class="s0">;</span>
+
+        <span class="s3">//Set  a layout manager on the recycle view</span>
+        <span class="s1">rvMovies.setLayoutManager(</span><span class="s0">new </span><span class="s1">LinearLayoutManager(</span><span class="s0">this</span><span class="s1">))</span><span class="s0">;</span>
+
+
+        <span class="s1">AsyncHttpClient client = </span><span class="s0">new </span><span class="s1">AsyncHttpClient()</span><span class="s0">;</span>
+        <span class="s1">client.get(NOW_PLAYING_URL</span><span class="s0">, new </span><span class="s1">JsonHttpResponseHandler() {</span>
+            <span class="s1">@Override</span>
+            <span class="s0">public void </span><span class="s1">onSuccess(</span><span class="s0">int </span><span class="s1">statusCode</span><span class="s0">, </span><span class="s1">Headers headers</span><span class="s0">, </span><span class="s1">JSON json) {</span>
+                <span class="s1">Log.d(TAG</span><span class="s0">, </span><span class="s2">&quot;onSuccess&quot;</span><span class="s1">)</span><span class="s0">;</span>
+                <span class="s1">JSONObject jsonObject = json.jsonObject</span><span class="s0">;</span>
+                <span class="s0">try </span><span class="s1">{</span>
+                    <span class="s1">JSONArray results = jsonObject.getJSONArray(</span><span class="s2">&quot;results&quot;</span><span class="s1">)</span><span class="s0">;</span>
+                    <span class="s1">Log.i(TAG</span><span class="s0">, </span><span class="s2">&quot;Results: &quot; </span><span class="s1">+ results.toString())</span><span class="s0">;</span>
+                    <span class="s1">movies.addAll(Movie.fromJsonArray(results))</span><span class="s0">;</span>
+                    <span class="s1">movieAdapter.notifyDataSetChanged()</span><span class="s0">;</span>
+                    <span class="s1">Log.i(TAG</span><span class="s0">, </span><span class="s2">&quot;Movies: &quot; </span><span class="s1">+ movies.size())</span><span class="s0">;</span>
+                <span class="s1">} </span><span class="s0">catch </span><span class="s1">(JSONException e) {</span>
+                    <span class="s1">Log.e(TAG</span><span class="s0">, </span><span class="s2">&quot;Hit json exception&quot;</span><span class="s0">, </span><span class="s1">e)</span><span class="s0">;</span>
+                <span class="s1">}</span>
+
+
+            <span class="s1">}</span>
+
+            <span class="s1">@Override</span>
+            <span class="s0">public void </span><span class="s1">onFailure(</span><span class="s0">int </span><span class="s1">statusCode</span><span class="s0">, </span><span class="s1">Headers headers</span><span class="s0">, </span><span class="s1">String response</span><span class="s0">, </span><span class="s1">Throwable throwable) {</span>
+                <span class="s1">Log.d(TAG</span><span class="s0">, </span><span class="s2">&quot;onFailure&quot;</span><span class="s1">)</span><span class="s0">;</span>
+            <span class="s1">}</span>
+        <span class="s1">})</span><span class="s0">;</span>
+    <span class="s1">}</span>
+<span class="s1">}</span></pre>
+</body>
+</html>
